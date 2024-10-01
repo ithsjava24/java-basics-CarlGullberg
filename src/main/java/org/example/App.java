@@ -93,6 +93,8 @@ public class App {
                 maxTimme = i;
             }
         }
+
+
         Locale.setDefault(new Locale("sv", "SE"));
 
         double medelPris = (double) totalPris / HOURS_IN_DAY;
@@ -155,14 +157,58 @@ public class App {
 
 
     private static void visualizePrices() {
-        int maxPris = Arrays.stream(elpriser).max().orElse(1);  // Se till att maxpris inte är 0
-        int scale = Math.max(1, maxPris / 50);  // Bestäm en skala baserad på maxpris
+         int maxPris = Arrays.stream(elpriser).max().orElse(1);
+        int minPris = Arrays.stream(elpriser).min().orElse(1);
+        final int HEIGHT = 6;
+        final int COLUMN_COUNT = elpriser.length;
+        final float DIFFERENCE = (maxPris - minPris) / (HEIGHT - 1f);
 
-        for (int i = 0; i < elpriser.length; i++) {
-            int antalX = elpriser[i] / scale;
-            System.out.printf("%02d-%02d | %s (%d öre)%n", i, i + 1, "x".repeat(antalX), elpriser[i]);
+        System.out.println("Visualisering av elpriser: \n");
+
+
+        for (int i = HEIGHT; i > 0; i--) {
+            StringBuilder output = new StringBuilder();
+            int lowerBound = (i == 1) ? minPris : (int) (maxPris - (HEIGHT - i) * DIFFERENCE);
+
+            int maxLength = Integer.toString(maxPris).length();
+            int minLength = Integer.toString(minPris).length();
+            int longest = Math.max(maxLength, minLength);
+
+
+            if (i == HEIGHT) {
+                String spaces = maxLength < longest ? addSpaces(longest - maxLength) : "";
+                output.append(spaces).append(maxPris).append("|");
+            } else if (i == 1) {
+                String spaces = minLength < longest ? addSpaces(longest - minLength) : "";
+                output.append(spaces).append(minPris).append("|");
+            } else {
+                output.append(addSpaces(longest)).append("|");
+            }
+
+
+            for (int j = 0; j < COLUMN_COUNT; j++) {
+                int currentPrice = elpriser[j];
+                if (currentPrice >= lowerBound) {
+                    output.append("  x");
+                } else {
+                    output.append("   ");
+                }
+            }
+            System.out.println(output);
         }
+
+
+        System.out.print("   |------------------------------------------------------------------------\n");
+        System.out.print("   | 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23\n");
     }
+
+
+    private static String addSpaces(int count) {
+        return " ".repeat(count);
+    }
+
+
+
 
     private static String formatTime(int hour) {
         return String.format("%02d-%02d", hour, hour + 1);
